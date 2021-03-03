@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -23,11 +25,14 @@ public class Servidor {
      */
     public static void main(String[] args) throws IOException {
         int port = 7171;
+        ExecutorService executor = Executors.newFixedThreadPool(10);
 
         DatagramSocket socket = new DatagramSocket(port);
         DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
         
-        File archivotxt = new File("/archivos/examen.txt");
+        //File archivotxt = new File("/archivos/examen.txt");
+        
+        
         
         while (true) {
             socket.receive(packet);
