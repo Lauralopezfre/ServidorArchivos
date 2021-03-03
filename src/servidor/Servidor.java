@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.file.Paths;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,7 +20,7 @@ import java.util.concurrent.Executors;
  */
 public class Servidor {
 
-    private static final int ECHOMAX = 9;
+    private static final int ECHOMAX = 255;
 
     /**
      * @param args the command line arguments
@@ -29,19 +31,32 @@ public class Servidor {
 
         DatagramSocket socket = new DatagramSocket(port);
         DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
-        
-        //File archivotxt = new File("/archivos/examen.txt");
-        
-        
-        
+
         while (true) {
             socket.receive(packet);
-            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress() + 
-                    " en el puerto " + packet.getPort());
+            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress()
+                    + " en el puerto " + packet.getPort());
+
+            String nombreArchivo = new String(packet.getData(), packet.getOffset(), packet.getLength());
             
-            packet.setData("Asi es pa".getBytes());
+            File archivo = Paths.get("archivos\\"+nombreArchivo).toFile();
+
+            
+            
+            if (archivo.isFile()) {
+                Scanner in=new Scanner(archivo);
+                String s="";
+                try{
+                    s+=in.nextLine();
+                }catch(Exception e){
+                    System.out.println("Valió algo: "+e.getMessage());
+                }
+                packet.setData(s.getBytes());
+            } else {
+                packet.setData("Archivo No Encontrado".getBytes());
+            }
+
             socket.send(packet);
-            packet.setLength(ECHOMAX);
         }
     }
 
