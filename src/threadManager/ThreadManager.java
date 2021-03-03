@@ -5,9 +5,13 @@
  */
 package threadManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.file.Paths;
+import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 
 /**
  *
@@ -15,26 +19,41 @@ import java.net.DatagramSocket;
  */
 public class ThreadManager implements Runnable {
 
-    private DatagramSocket socket;
+    private final ExecutorService executor;
+    private final DatagramSocket socket;
     private DatagramPacket packet;
-    private int ECHOMAX;
+    private final int ECHOMAX=255;
 
-    public ThreadManager(DatagramSocket socket, DatagramPacket packet, int ECHOMAX) {
-        this.socket = socket;
-        this.packet = packet;
-        this.ECHOMAX = ECHOMAX;
-        run();
+    public ThreadManager(ExecutorService executor, DatagramSocket socket) {
+        this.executor=executor;
+        this.socket=socket;
     }
 
     public void atenderHilo() throws IOException {
+        packet=new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
+        socket.receive(packet);
+        executor.execute(new ThreadManager(executor, socket));
         
         System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress()
                 + " en el puerto " + packet.getPort() + " mensaje " + new String(packet.getData()));
 
-        packet.setData("Asi es pa".getBytes());
+        String nombreArchivo = new String(packet.getData(), packet.getOffset(), packet.getLength());
+
+        File archivo = Paths.get("archivos\\" + nombreArchivo).toFile();
+
+        if (archivo.isFile()) {
+            Scanner in = new Scanner(archivo);
+            String s = "";
+            try {
+                s += in.nextLine();
+            } catch (Exception e) {
+                System.out.println("Valió algo: " + e.getMessage());
+            }
+            packet.setData(s.getBytes());
+        } else {
+            packet.setData("Archivo No Encontrado".getBytes());
+        }
         socket.send(packet);
-        packet.setLength(ECHOMAX);
-        
     }
 
     @Override
@@ -45,5 +64,4 @@ public class ThreadManager implements Runnable {
             System.out.println("ERROR");
         }
     }
-
 }

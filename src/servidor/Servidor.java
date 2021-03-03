@@ -19,25 +19,22 @@ import threadManager.ThreadManager;
  */
 public class Servidor {
 
-    private static final int ECHOMAX = 9;
+    private static final int ECHOMAX = 255;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
         int port = 7171;
-        ExecutorService executor = Executors.newCachedThreadPool();
+        ExecutorService executor = Executors.newFixedThreadPool(10);
 
         DatagramSocket socket = new DatagramSocket(port);
-        DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
         
         //File archivotxt = new File("/archivos/examen.txt");
         
-        while (true) {
-            socket.receive(packet);
-            executor.execute(new ThreadManager(socket, packet, ECHOMAX));
-            
-        }
+            //socket.receive(packet);
+        executor.execute(new ThreadManager(executor, socket));
+       
     }
 
 }
