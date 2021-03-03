@@ -11,6 +11,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import threadManager.ThreadManager;
 
 /**
  *
@@ -25,23 +26,17 @@ public class Servidor {
      */
     public static void main(String[] args) throws IOException {
         int port = 7171;
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        ExecutorService executor = Executors.newCachedThreadPool();
 
         DatagramSocket socket = new DatagramSocket(port);
         DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
         
         //File archivotxt = new File("/archivos/examen.txt");
         
-        
-        
         while (true) {
             socket.receive(packet);
-            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress() + 
-                    " en el puerto " + packet.getPort());
+            executor.execute(new ThreadManager(socket, packet, ECHOMAX));
             
-            packet.setData("Asi es pa".getBytes());
-            socket.send(packet);
-            packet.setLength(ECHOMAX);
         }
     }
 
