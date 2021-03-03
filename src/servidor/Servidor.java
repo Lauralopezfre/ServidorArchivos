@@ -5,6 +5,7 @@
  */
 package servidor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,10 +26,13 @@ public class Servidor {
 
         DatagramSocket socket = new DatagramSocket(port);
         DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
-
+        
+        File archivotxt = new File("/archivos/examen.txt");
+        
         while (true) {
             socket.receive(packet);
-            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress() + " en el puerto " + packet.getPort());
+            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress() + 
+                    " en el puerto " + packet.getPort());
             
             packet.setData("Asi es pa".getBytes());
             socket.send(packet);
