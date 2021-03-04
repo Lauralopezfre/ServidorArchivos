@@ -49,10 +49,30 @@ public class ThreadManager implements Runnable {
             } catch (Exception e) {
                 System.out.println("Valió algo: " + e.getMessage());
             }
-            packet.setData(s.getBytes());
+            
+            if (s.length() > ECHOMAX) {
+                byte k = 1;
+                for (int i = 0; i < s.length(); i += ECHOMAX) {
+                    byte[] orden = {k};
+                    packet.setData(orden);
+                    socket.send(packet);
+                    
+                    String paquetito = s.substring(i, i + ECHOMAX);
+                    packet.setData(paquetito.getBytes());
+                    socket.send(packet);
+                    k++;
+                }
+                
+            } else {
+                packet.setData(s.getBytes());
+                socket.send(packet);
+            }
+            
         } else {
             packet.setData("Archivo No Encontrado".getBytes());
         }
+        byte[] fin = {0};
+        packet.setData(fin);
         socket.send(packet);
     }
 
