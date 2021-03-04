@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 
@@ -51,20 +52,30 @@ public class ThreadManager implements Runnable {
             }
             
             if (s.length() > ECHOMAX) {
-                byte k = 1;
-                for (int i = 0; i < s.length(); i += ECHOMAX) {
-                    byte[] orden = {k};
+                byte identificador = 1;
+                for (int i = 0; i < s.length();) {
+                    byte[] orden = {identificador};
                     packet.setData(orden);
+                    System.out.println("i"+ i);
+                    System.out.println("1"+Arrays.toString(packet.getData()));
                     socket.send(packet);
+                    String paquetito ="";
+                    if(s.substring(i).length()>ECHOMAX){
+                         paquetito =s.substring(i, i+ECHOMAX);
+                    }else{
+                        paquetito =s.substring(i);
+                    }
                     
-                    String paquetito = s.substring(i, i + ECHOMAX);
                     packet.setData(paquetito.getBytes());
+                    System.out.println("2"+Arrays.toString(packet.getData()));
                     socket.send(packet);
-                    k++;
+                    i += ECHOMAX;
+                    identificador++;
                 }
                 
             } else {
                 packet.setData(s.getBytes());
+                System.out.println("3"+Arrays.toString(packet.getData()));
                 socket.send(packet);
             }
             
@@ -73,6 +84,7 @@ public class ThreadManager implements Runnable {
         }
         byte[] fin = {0};
         packet.setData(fin);
+        System.out.println("4"+Arrays.toString(packet.getData()));
         socket.send(packet);
     }
 
