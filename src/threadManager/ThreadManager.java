@@ -23,18 +23,18 @@ public class ThreadManager implements Runnable {
     private final ExecutorService executor;
     private final DatagramSocket socket;
     private DatagramPacket packet;
-    private final int ECHOMAX=255;
+    private final int ECHOMAX = 255;
 
     public ThreadManager(ExecutorService executor, DatagramSocket socket) {
-        this.executor=executor;
-        this.socket=socket;
+        this.executor = executor;
+        this.socket = socket;
     }
 
     public void atenderHilo() throws IOException {
-        packet=new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
+        packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
         socket.receive(packet);
         executor.execute(new ThreadManager(executor, socket));
-        
+
         System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress()
                 + " en el puerto " + packet.getPort() + " mensaje " + new String(packet.getData()));
 
@@ -50,42 +50,43 @@ public class ThreadManager implements Runnable {
             } catch (Exception e) {
                 System.out.println("Valió algo: " + e.getMessage());
             }
+
+            //orden de los paquetes
+            byte identificador = (byte) 1;
             
-            if (s.length() > ECHOMAX) {
-                byte identificador = 1;
-                for (int i = 0; i < s.length();) {
-                    byte[] orden = {identificador};
-                    packet.setData(orden);
-                    System.out.println("i"+ i);
-                    System.out.println("1"+Arrays.toString(packet.getData()));
-                    socket.send(packet);
-                    String paquetito ="";
-                    if(s.substring(i).length()>ECHOMAX){
-                         paquetito =s.substring(i, i+ECHOMAX);
-                    }else{
-                        paquetito =s.substring(i);
-                    }
-                    
-                    packet.setData(paquetito.getBytes());
-                    System.out.println("2"+Arrays.toString(packet.getData()));
-                    socket.send(packet);
-                    i += ECHOMAX;
-                    identificador++;
-                }
+            // por cada paquete que se va crear con la longitud ECHOMAX
+            for (int i = 0; i < s.length(); i += ECHOMAX) {
                 
-            } else {
-                packet.setData(s.getBytes());
-                System.out.println("3"+Arrays.toString(packet.getData()));
+                // se establece y se envia cual va ser el orden del paquete que se va enviar.
+                packet.setData(new byte[] {identificador});
                 socket.send(packet);
+
+                String paquetito = "";
+                
+                // si los la longitud de los datos es mayor a la longitud del paquete
+                if (s.substring(i).length() > ECHOMAX) {
+                    paquetito = s.substring(i, i + ECHOMAX);
+                } else {
+                    paquetito = s.substring(i);
+                }
+
+                // Se establece y se envia los datos.
+                packet.setData(paquetito.getBytes());
+                socket.send(packet);
+
+                // se incrementa el orden.
+                identificador++;
             }
-            
+
         } else {
             packet.setData("Archivo No Encontrado".getBytes());
         }
+        
+        // Se establece y se envia el paquete una señal que ya se enviaron todos los paquetes.
         byte[] fin = {0};
         packet.setData(fin);
-        System.out.println("4"+Arrays.toString(packet.getData()));
         socket.send(packet);
+        packet.setLength(packet.getData().length);
     }
 
     @Override
