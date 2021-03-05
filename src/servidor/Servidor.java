@@ -5,36 +5,36 @@
  */
 package servidor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import threadManager.ThreadManager;
 
 /**
  *
  * @author laura
  */
 public class Servidor {
+
     private static final int ECHOMAX = 255;
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException{
-        if(args.length != 1){
-            throw new IllegalArgumentException("Parameter(s): <Port>");
-        }
-        int port = Integer.parseInt(args[0]);
-        
+    public static void main(String[] args) throws IOException {
+        int port = 7171;
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+
         DatagramSocket socket = new DatagramSocket(port);
-        DatagramPacket packet = new DatagramPacket(new byte[ECHOMAX], ECHOMAX);
         
-        while(true){
-            socket.receive(packet);
-            System.out.println("Manejando cliente en: " + packet.getAddress().getHostAddress() + " en el puerto " + packet.getPort());
-            
-            socket.send(packet);
-            packet.setLength(ECHOMAX);
-            
-        }
+        //File archivotxt = new File("/archivos/examen.txt");
+        
+            //socket.receive(packet);
+        executor.execute(new ThreadManager(executor, socket));
+       
     }
-    
+
 }
